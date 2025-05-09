@@ -6,11 +6,15 @@ from g2p.app import APP
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
+from starlette.routing import Route
 
-# Override the root route to redirect to docs
-@APP.get("/", include_in_schema=False)
-async def root():
+# For Starlette apps, we need to use routes differently
+# Remove the previous decorator approach and add routes directly
+async def root(request):
     return RedirectResponse(url="/api/v1/docs")
+
+# Add the route to the APP's routes list
+APP.routes.append(Route("/", endpoint=root, include_in_schema=False))
 
 APP.add_middleware(
     CORSMiddleware,
