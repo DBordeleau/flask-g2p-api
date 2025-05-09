@@ -2,18 +2,23 @@
 import os
 import sys
 import logging
-from g2p.app import APP
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from starlette.routing import Route
 
-# For Starlette apps, we need to use routes differently
-# Remove the previous decorator approach and add routes directly
+from g2p import app as g2p_app
+
+async def fixed_home(request):
+    return g2p_app.TEMPLATES.TemplateResponse("index.html", {"request": request})
+
+g2p_app.home = fixed_home
+
+from g2p.app import APP
+
 async def root(request):
     return RedirectResponse(url="/api/v1/docs")
 
-# Add the route to the APP's routes list
 APP.routes.append(Route("/", endpoint=root, include_in_schema=False))
 
 APP.add_middleware(
@@ -32,5 +37,4 @@ if __name__ == "__main__":
     logger.info(f"Starting G2P API server on port {port}")
     logger.info(f"API documentation will be available at http://localhost:{port}/api/v1/docs")
     
-    # Run the built-in g2p API server
     uvicorn.run(APP, host="0.0.0.0", port=port)
